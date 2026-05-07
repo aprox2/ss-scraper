@@ -1,5 +1,7 @@
 import time
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 BASE_URL = "https://www.ss.lv"
 SORT_PRICE_ASC = "fDgSeF4belM="
@@ -14,6 +16,16 @@ HEADERS = {
 def create_session() -> requests.Session:
     session = requests.Session()
     session.headers.update(HEADERS)
+
+    retry = Retry(
+        total=3,
+        backoff_factor=2,
+        status_forcelist=[429, 500, 502, 503, 504],
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+
     return session
 
 
