@@ -66,6 +66,20 @@ def parse_detail(html: str) -> CarDetails:
     # Make from "Marka" field
     marka = fields.get("Marka", "")
 
+    # Seller's description
+    msg_div = soup.find(id="msg_div_msg")
+    description = msg_div.get_text(separator="\n", strip=True) if msg_div else ""
+
+    # First image (use the large .800.jpg version if available)
+    image_url = ""
+    first_img = soup.select_one('img[src*="ss.lv/gallery"]')
+    if first_img:
+        parent_a = first_img.find_parent("a")
+        if parent_a and parent_a.get("href", "").endswith(".jpg"):
+            image_url = parent_a["href"]
+        else:
+            image_url = first_img["src"]
+
     return CarDetails(
         id="",  # filled by caller
         url="",  # filled by caller
@@ -77,6 +91,8 @@ def parse_detail(html: str) -> CarDetails:
         mileage=fields.get("Nobraukums, km", ""),
         tech_inspection=fields.get("Tehniskā apskate", ""),
         price=price,
+        description=description,
+        image_url=image_url,
     )
 
 

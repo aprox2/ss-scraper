@@ -40,9 +40,18 @@ def build_embed(car: CarDetails) -> dict:
     if car.price:
         fields.append({"name": "Price", "value": car.price, "inline": True})
 
-    return {
+    embed = {
         "title": f"{car.make}",
         "url": f"{BASE_URL}{car.url}",
         "color": 0x2ECC71,
         "fields": fields,
     }
+
+    if car.description:
+        desc = car.description if len(car.description) <= 300 else car.description[:297] + "..."
+        embed["description"] = desc
+
+    if car.image_url:
+        embed["thumbnail"] = {"url": car.image_url}
+
+    return embed

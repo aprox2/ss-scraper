@@ -26,3 +26,5 @@ class CarDetails:
     mileage: str
     tech_inspection: str
     price: str
+    description: str = ""
+    image_url: str = ""
