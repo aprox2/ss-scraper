@@ -1,5 +1,6 @@
 {
   "car_makes": [
-    {"name": "BMW", "slug": "bmw"}
+    {"name": "BMW", "slug": "bmw"},
+    {"name": "Mercedes", "slug": "mercedes"}
   ]
 }

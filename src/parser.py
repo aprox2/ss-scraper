@@ -80,6 +80,8 @@ def parse_detail(html: str) -> CarDetails:
         else:
             image_url = first_img["src"]
 
+    gearbox = _parse_gearbox(fields.get("Ātrumkārba", ""))
+
     return CarDetails(
         id="",  # filled by caller
         url="",  # filled by caller
@@ -91,6 +93,7 @@ def parse_detail(html: str) -> CarDetails:
         mileage=fields.get("Nobraukums, km", ""),
         tech_inspection=fields.get("Tehniskā apskate", ""),
         price=price,
+        gearbox=gearbox,
         description=description,
         image_url=image_url,
     )
@@ -118,6 +121,17 @@ def _parse_motor(motor: str) -> tuple[str, str]:
     fuel_type = fuel_map.get(fuel_type.lower(), fuel_type)
 
     return (engine, fuel_type)
+
+
+def _parse_gearbox(gearbox: str) -> str:
+    if not gearbox:
+        return ""
+    lower = gearbox.lower()
+    if lower.startswith("manuāla"):
+        return "Manual"
+    if lower.startswith("automāts"):
+        return "Automatic"
+    return gearbox
 
 
 def _extract_model(marka: str) -> str:

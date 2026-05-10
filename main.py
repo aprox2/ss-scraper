@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+from datetime import date
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -8,7 +9,7 @@ from dotenv import load_dotenv
 from src.notifier import send_discord_notification
 from src.parser import parse_detail, parse_listings
 from src.scraper import create_session, fetch_detail_page, fetch_listing_page
-from src.state import load_seen, save_seen
+from src.state import cleanup_old, load_seen, save_seen
 
 load_dotenv()
 
@@ -25,8 +26,16 @@ def main():
     seen_ids = load_seen(str(STATE_PATH))
     session = create_session()
 
+    # Clean up entries older than 3 months
+    before_cleanup = len(seen_ids)
+    seen_ids = cleanup_old(seen_ids)
+    removed = before_cleanup - len(seen_ids)
+    if removed:
+        print(f"Cleaned up {removed} entries older than 3 months")
+
+    today = date.today().isoformat()
     all_new_cars = []
-    all_current_ids = set()
+    all_current_ids = {}
 
     for make in config["car_makes"]:
         make_name = make["name"]
@@ -37,7 +46,7 @@ def main():
         listings = parse_listings(html, make_name)
         print(f"  Found {len(listings)} listings")
 
-        current_ids = {listing.id for listing in listings}
+        current_ids = {listing.id: today for listing in listings}
         all_current_ids.update(current_ids)
 
         new_listings = [l for l in listings if l.id not in seen_ids]
@@ -50,6 +59,9 @@ def main():
                 details = parse_detail(detail_html)
                 details.id = listing.id
                 details.url = listing.url
+                if details.gearbox != "Manual":
+                    print(f"    Skipping (gearbox: {details.gearbox or 'unknown'})")
+                    continue
                 all_new_cars.append(details)
             except Exception as e:
                 print(f"  Error fetching details for {listing.id}: {e}")
@@ -66,7 +78,7 @@ def main():
             sys.exit(1)
 
     # Update state with all current listing IDs
-    updated_ids = seen_ids | all_current_ids
+    updated_ids = {**seen_ids, **all_current_ids}
     save_seen(str(STATE_PATH), updated_ids)
     print(f"State saved ({len(updated_ids)} total seen IDs)")
 

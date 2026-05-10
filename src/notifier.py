@@ -33,6 +33,8 @@ def build_embed(car: CarDetails) -> dict:
         fields.append({"name": "Engine", "value": car.engine, "inline": True})
     if car.fuel_type:
         fields.append({"name": "Fuel", "value": car.fuel_type, "inline": True})
+    if car.gearbox:
+        fields.append({"name": "Gearbox", "value": car.gearbox, "inline": True})
     if car.mileage:
         fields.append({"name": "Mileage", "value": f"{car.mileage} km", "inline": True})
     if car.tech_inspection:
