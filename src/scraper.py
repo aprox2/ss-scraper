@@ -5,6 +5,7 @@ from urllib3.util.retry import Retry
 
 BASE_URL = "https://www.ss.lv"
 SORT_PRICE_ASC = "fDgSeF4belM="
+SORT_PRICE_ASC_PAGE_2 = "fDgTeF4SAzp4FD4eHTwT"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -29,8 +30,8 @@ def create_session() -> requests.Session:
     return session
 
 
-def fetch_listing_page(session: requests.Session, make_slug: str) -> str:
-    url = f"{BASE_URL}/lv/transport/cars/{make_slug}/{SORT_PRICE_ASC}.html"
+def fetch_listing_page(session: requests.Session, make_slug: str, page_token: str = SORT_PRICE_ASC) -> str:
+    url = f"{BASE_URL}/lv/transport/cars/{make_slug}/{page_token}.html"
     response = session.get(url, timeout=30)
     response.raise_for_status()
     return response.text

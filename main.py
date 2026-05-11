@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 from src.notifier import send_discord_notification
 from src.parser import parse_detail, parse_listings
-from src.scraper import create_session, fetch_detail_page, fetch_listing_page
+from src.scraper import create_session, fetch_detail_page, fetch_listing_page, SORT_PRICE_ASC_PAGE_2
 from src.state import cleanup_old, load_seen, save_seen
 
 load_dotenv()
@@ -44,7 +44,13 @@ def main():
         print(f"Fetching listings for {make_name}...")
         html = fetch_listing_page(session, make_slug)
         listings = parse_listings(html, make_name)
-        print(f"  Found {len(listings)} listings")
+
+        html_page2 = fetch_listing_page(session, make_slug, SORT_PRICE_ASC_PAGE_2)
+        listings_page2 = parse_listings(html_page2, make_name)
+
+        seen_ids_page1 = {l.id for l in listings}
+        listings += [l for l in listings_page2 if l.id not in seen_ids_page1]
+        print(f"  Found {len(listings)} listings (2 pages)")
 
         current_ids = {listing.id: today for listing in listings}
         all_current_ids.update(current_ids)
